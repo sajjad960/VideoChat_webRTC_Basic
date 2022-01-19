@@ -25,14 +25,39 @@ io.on('connection', function(socket) {
 
        if(room === undefined) {
            socket.join(roomName);
-           console.log("Room created");
+           socket.emit('created')
        }else if(room.size === 1) {
            socket.join(roomName);
-           console.log('Room joined');
+           socket.emit('joined')
        } else {
-           console.log('Room full for now');
+           socket.emit('full')
        }
 
        console.log(rooms);
     })
+
+    // make ready to jhon , coz Bob need to know that jhon ready to connect, bcoz Bob created the room
+    socket.on('ready', function(roomName) {
+        console.log('ready');
+        socket.broadcast.to(roomName).emit('ready')
+    })
+
+    // Craeting ICE, coz ICE need to connected with our public address, Bob with Jhon
+    socket.on('candidate', function(candidate, roomName) {
+        console.log('candidate');
+        socket.broadcast.to(roomName).emit('candidate', candidate)
+    })
+
+      // sent a offer from BOB or anyone
+      socket.on('offer', function(offer, roomName) {
+        console.log('offer');
+        socket.broadcast.to(roomName).emit('offer', offer)
+    })
+
+       // sent a aswer to BOB from jhon or anyone
+       socket.on('answer', function(answer, roomName) {
+        console.log('answer');
+        socket.broadcast.to(roomName).emit('answer', answer)
+    })
+
 })
