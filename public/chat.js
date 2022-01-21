@@ -8,13 +8,13 @@ let roomInput = document.getElementById("roomName");
 let roomName = roomInput.value;
 let creator = false
 let rtcPeerConnection;
+let userStream;
 
 //connecting ice server
 const iceServers = {
   iceServers: [
     {urls: "stun:stun.services.mozilla.com"},
-    {urls: "stun1.l.google.com:19302"},
-
+    {urls: "stun:stun1.l.google.com:19302"},
   ]
 }
 
@@ -28,18 +28,17 @@ joinButton.addEventListener('click', function(){
 })
 
 socket.on('created', function() {
-  let creator = true
+  creator = true
 
   async function getMedia(constraints) {
-  let stream = null;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
+      userStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {width: 1280, height: 720}
       });
       /* use the stream */
       divVideoChatLobby.style = 'display:none'
-      userVideo.srcObject = stream;
+      userVideo.srcObject = userStream;
       userVideo.onloadedmetadata = function(e) {
         userVideo.play();
       };
@@ -55,22 +54,22 @@ socket.on('created', function() {
 })
 
 socket.on('joined', function() {
-  let creator = false
+  creator = false;
+  console.log('user joined');
 
   async function getMedia(constraints) {
-    let stream = null;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
+        userStream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {width: 1280, height: 720}
         });
         /* use the stream */
         divVideoChatLobby.style = 'display:none'
-        userVideo.srcObject = stream;
+        userVideo.srcObject = userStream;
         userVideo.onloadedmetadata = function(e) {
           userVideo.play();
         };
-        
+        console.log('joined');
         socket.emit('ready', roomName)
       } catch(err) {
         /* handle the error */
@@ -86,9 +85,24 @@ socket.on('full', function() {
 
 // Creating rtcpeerconnection and get cndidate from iceserver
 socket.on('ready', function() {
+  console.log('check ready');
   if(creator) {
     rtcPeerConnection = new RTCPeerConnection(iceServers);
     rtcPeerConnection.onicecandidate = OnIceCndidateFunction;
+    rtcPeerConnection.ontrack = OnTrackFunction;
+    rtcPeerConnection.addTrack(userStream.getTracks()[0], userStream);
+    rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
+    rtcPeerConnection
+    .createOffer()
+    .then((offer) => {
+      console.log(offer);
+      rtcPeerConnection.setLocalDescription(offer);
+      socket.emit("offer", offer, roomName);
+    })
+
+    .catch((error) => {
+      console.log(error);
+    });
   }
 })
 socket.on('offer', function() {})
@@ -96,6 +110,13 @@ socket.on('answer', function() {})
 
 function OnIceCndidateFunction(event) {
   if(event.candidate) {
-    socket.emit('candidate',event.candidate, roomName)
+    socket.emit('candidate',event.candidate, roomName);
   }
+}
+
+function OnTrackFunction(event) {
+  peerVideo.srcObject = event.stream[0];
+  peerVideo.onloadedmetadata = function(e) {
+    peerVideo.play();
+  };
 }

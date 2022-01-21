@@ -16,12 +16,12 @@ app.use(express.static("public"))
 
 // working with socket
 io.on('connection', function(socket) {
-    console.log('User connected' + socket.id);
+    // console.log('User connected' + socket.id);
 
     socket.on('join', function(roomName) {
         const rooms = io.sockets.adapter.rooms;
         const room = rooms.get(roomName);
-        console.log(rooms, room);
+        // console.log(rooms, room);
 
        if(room === undefined) {
            socket.join(roomName);
