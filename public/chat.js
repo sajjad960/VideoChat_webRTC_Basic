@@ -6,8 +6,17 @@ let userVideo = document.getElementById("user-video");
 let peerVideo = document.getElementById("peer-video");
 let roomInput = document.getElementById("roomName");
 let roomName = roomInput.value;
-
 let creator = false
+let rtcPeerConnection;
+
+//connecting ice server
+const iceServers = {
+  iceServers: [
+    {urls: "stun:stun.services.mozilla.com"},
+    {urls: "stun1.l.google.com:19302"},
+
+  ]
+}
 
 joinButton.addEventListener('click', function(){
   if(roomInput.value === '') {
@@ -62,7 +71,7 @@ socket.on('joined', function() {
           userVideo.play();
         };
         
-        roomInput.value === ''
+        socket.emit('ready', roomName)
       } catch(err) {
         /* handle the error */
         console.log(err);
@@ -74,6 +83,19 @@ socket.on('joined', function() {
 socket.on('full', function() {
   alert('room is full, can not join')
 })
-socket.on('ready', function() {})
+
+// Creating rtcpeerconnection and get cndidate from iceserver
+socket.on('ready', function() {
+  if(creator) {
+    rtcPeerConnection = new RTCPeerConnection(iceServers);
+    rtcPeerConnection.onicecandidate = OnIceCndidateFunction;
+  }
+})
 socket.on('offer', function() {})
 socket.on('answer', function() {})
+
+function OnIceCndidateFunction(event) {
+  if(event.candidate) {
+    socket.emit('candidate',event.candidate, roomName)
+  }
+}
