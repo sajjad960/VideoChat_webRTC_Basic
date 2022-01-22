@@ -84,22 +84,20 @@ socket.on('full', function() {
 })
 
 // Creating rtcpeerconnection and get cndidate from iceserver
-socket.on('ready', function() {
+socket.on('readyPeer', function() {
   console.log('check ready');
   if(creator) {
     rtcPeerConnection = new RTCPeerConnection(iceServers);
     rtcPeerConnection.onicecandidate = OnIceCndidateFunction;
     rtcPeerConnection.ontrack = OnTrackFunction;
     rtcPeerConnection.addTrack(userStream.getTracks()[0], userStream);
-    rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
+    // rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
     rtcPeerConnection
     .createOffer()
     .then((offer) => {
-      console.log(offer);
       rtcPeerConnection.setLocalDescription(offer);
       socket.emit("offer", offer, roomName);
     })
-
     .catch((error) => {
       console.log(error);
     });

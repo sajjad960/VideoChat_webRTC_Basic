@@ -33,13 +33,14 @@ io.on('connection', function(socket) {
            socket.emit('full')
        }
 
-       console.log(rooms);
+    //    console.log(rooms);
     })
 
     // make ready to jhon , coz Bob need to know that jhon ready to connect, bcoz Bob created the room
     socket.on('ready', function(roomName) {
-        console.log('ready');
-        socket.broadcast.to(roomName).emit('ready')
+        console.log('fist ready');
+        console.log(roomName);
+        socket.broadcast.to(roomName).emit("readyPeer"); 
     })
 
     // Craeting ICE, coz ICE need to connected with our public address, Bob with Jhon
