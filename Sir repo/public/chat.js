@@ -121,7 +121,7 @@ socket.on("offer", function (offer) {
     rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
     rtcPeerConnection.ontrack = OnTrackFunction;
     rtcPeerConnection.addTrack(userStream.getTracks()[0], userStream);
-    rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
+    // rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
     rtcPeerConnection.setRemoteDescription(offer);
     rtcPeerConnection
       .createAnswer()

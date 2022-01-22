@@ -103,8 +103,38 @@ socket.on('readyPeer', function() {
     });
   }
 })
-socket.on('offer', function() {})
-socket.on('answer', function() {})
+
+socket.on('candidate', function(candidate) {
+  const icecandidate = new RTCIceCandidate({
+    candidate: candidate.candidate,
+    sdpMid: candidate.sdpMid,
+    sdpMLineIndex: candidate.sdpMLineIndex,
+  });
+  rtcPeerConnection.addIceCandidate(icecandidate)
+})
+
+socket.on('offer', function(offer) {
+  if (!creator) {
+    rtcPeerConnection = new RTCPeerConnection(iceServers);
+    rtcPeerConnection.onicecandidate = OnIceCndidateFunction;
+    rtcPeerConnection.ontrack = OnTrackFunction;
+    rtcPeerConnection.addTrack(userStream.getTracks()[0], userStream);
+    // rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
+    rtcPeerConnection.setRemoteDescription(offer);
+    rtcPeerConnection
+      .createAnswer()
+      .then((answer) => {
+        rtcPeerConnection.setLocalDescription(answer);
+        socket.emit("answer", answer, roomName);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+})
+socket.on('answer', function(answer) {
+  rtcPeerConnection.setRemoteDescription(answer)
+})
 
 function OnIceCndidateFunction(event) {
   if(event.candidate) {
@@ -113,7 +143,7 @@ function OnIceCndidateFunction(event) {
 }
 
 function OnTrackFunction(event) {
-  peerVideo.srcObject = event.stream[0];
+  peerVideo.srcObject = event.streams[0];
   peerVideo.onloadedmetadata = function(e) {
     peerVideo.play();
   };
