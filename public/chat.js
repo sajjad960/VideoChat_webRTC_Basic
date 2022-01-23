@@ -1,5 +1,5 @@
 //socket for production
-let socket = io.connect("https://videoroom.findsajjad.com/socket");
+let socket = io.connect("https://videoroom.findsajjad.com");
 
 
 //socket for localhost
