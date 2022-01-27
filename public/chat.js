@@ -19,8 +19,8 @@ let userStream;
 //connecting ice server
 const iceServers = {
   iceServers: [
-    {urls: "stun:stun.services.mozilla.com"},
-    {urls: "stun:stun1.l.google.com:19302"},
+    {urls: "stun:stun.sipnet.net:3478"},
+    {urls: "stun:stun.sipnet.ru:3478"},
   ]
 }
 
